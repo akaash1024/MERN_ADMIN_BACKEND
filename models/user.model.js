@@ -13,11 +13,14 @@ const userSchema = new mongoose.Schema(
   },
   {
     versionKey: false,
+    timestamps: true,
+    toJSON: { virtuals: true },
   }
 );
 
 userSchema.pre("save", async function (next) {
   const user = this;
+  //! check kya, user ka password modified nai hain?!
   if (!user.isModified("password")) {
     next();
   }
@@ -36,7 +39,6 @@ userSchema.methods.comparePassword = async function (password) {
   return bcrypt.compare(password, this.password);
 };
 
-
 userSchema.methods.generateToken = async function (next) {
   try {
     return jwt.sign(
@@ -46,9 +48,7 @@ userSchema.methods.generateToken = async function (next) {
         isAdmin: this.isAdmin,
       },
       process.env.JWT_SECRET_KEY,
-      {
-        expiresIn: "30d",
-      }
+      { expiresIn: "30d" }
     );
   } catch (error) {
     console.error(error);

@@ -8,6 +8,7 @@ const authMiddleware = async (req, res, next) => {
   
   if (!token) {
     return res.status(401).json({ message: "Unauthorized. Token not provided" });
+    // ! need to test later process.exit(0)
   }
 
   const jwtToken = token.split(" ")[1]; // Extract token properly
@@ -17,6 +18,14 @@ const authMiddleware = async (req, res, next) => {
 
   try {
     const isVerified = jwt.verify(jwtToken, process.env.JWT_SECRET_KEY);
+
+    // ! need to test this
+    // ! const userData = await User_Database.findOne({ email: isVerified.email }, {isVerified.password:0})
+
+    // ! in case want certain field
+    // ! not comma, ("name age contact etc..")
+    // !const userData = await User_Database.findOne({ email: isVerified.email }).select("name age"); 
+
 
     const userData = await User_Database.findOne({ email: isVerified.email }).select("-password");
 

@@ -2,14 +2,16 @@ const Service_Database = require("../models/service.model");
 
 const services = async (req, res) => {
   try {
-    const response = await Service_Database.find();
-    if (!response) {
-      res.status(404).json({ msg: "No service found" });
+    //throw { message: "Akash Error done"}
+    const service_data = await Service_Database.find({});
+    if (!service_data.length) {
+      res.status(404).json({ success: false, message: "No service found" });
       return;
     }
-    res.status(200).json({ msg: response });
+    res.status(200).json({ success: true,  service_data });
   } catch (error) {
-    console.log(`services: ${error}`);
+    console.error("Database Error:", error);
+    res.status(500).json({ success: false, error: error.message });
   }
 };
 

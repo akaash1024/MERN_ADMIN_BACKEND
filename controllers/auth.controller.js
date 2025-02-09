@@ -10,7 +10,11 @@ const home = (req, res, next) => {
     throw {
       errors: [{ message: "Invalid input format Akash" }],
     };
+
+    // res.status(200).send(new ApiResponse(200, "Akash  successfully done"));
   } catch (err) {
+    console.log(err);
+
     const status = 422;
     const message = "Fill the input properly";
     const extraDetails = err.errors[0].message;
@@ -34,7 +38,9 @@ const register = async (req, res, next) => {
     const isUserExit = await User_Database.findOne({ email });
 
     if (isUserExit) {
-      return res.status(400).json({ msg: "Email is already registered." });
+      return res
+        .status(400)
+        .json({ success: false, message: "Email is already registered." });
     }
 
     const newUser = await User_Database.create({
@@ -51,7 +57,7 @@ const register = async (req, res, next) => {
 
     return res.status(201).json({
       success: true,
-      msg: "Successfully Created",
+      message: "Successfully Created",
       newUserDetails, // ✅ Ensure this is present
     });
   } catch (error) {
@@ -67,13 +73,17 @@ const login = async (req, res, next) => {
     const isUserExist = await User_Database.findOne({ email });
 
     if (!isUserExist) {
-      return res.status(400).json({ success: false, message: "Invalid Credentials" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid Credentials" });
     }
 
     const isPasswordValid = await isUserExist.comparePassword(password);
 
     if (!isPasswordValid) {
-      return res.status(401).json({ success: false, message: "Invalid email or password" });
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid email or password" });
     }
 
     const userDetails = {
@@ -83,14 +93,13 @@ const login = async (req, res, next) => {
 
     return res.status(200).json({
       success: true,
-      message: "Login Successful",
+      message: "Login Successful backend",
       data: userDetails, // ✅ Ensure 'data' contains token
     });
   } catch (error) {
     next(error);
   }
 };
-
 
 const user = async (req, res, next) => {
   try {

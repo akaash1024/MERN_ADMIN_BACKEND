@@ -47,11 +47,6 @@ const getUserById = async (req, res, next) => {
   }
 };
 
-
-
-
-
-
 // *-------------------------------
 //* user update Logic 📝
 // *-------------------------------
@@ -77,11 +72,7 @@ const updateUserById = async (req, res, next) => {
     const id = req.params.id;
     const updatedUserData = req.body;
 
-    const updatedData = await User_Database.findByIdAndUpdate(
-      id,
-      updatedUserData,
-      { new: true, runValidators: true }
-    );
+    const updatedData = await User_Database.findByIdAndUpdate(id,updatedUserData,{ new: true });
 
     if (!updatedData) {
       return res.status(404).json({ message: "User not found" });
@@ -117,12 +108,13 @@ const deleteUserById = async (req, res, next) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    return res.status(200).json({ message: "User deleted successfully", deletedUser });
+    return res
+      .status(200)
+      .json({ message: "User deleted successfully", deletedUser });
   } catch (error) {
-    next(error); 
+    next(error);
   }
 };
-
 
 // *-------------------------------
 //* getAllContacts Logic 📝
@@ -164,12 +156,13 @@ const deleteContactById = async (req, res, next) => {
       return res.status(404).json({ message: "Contact not found" });
     }
 
-    return res.status(200).json({ message: "Contact deleted successfully", deletedContact });
+    return res
+      .status(200)
+      .json({ message: "Contact deleted successfully", deletedContact });
   } catch (error) {
     next(error); // Pass error to middleware
   }
 };
-
 
 module.exports = {
   getAllUsers,
