@@ -15,20 +15,22 @@ const path = require("path");
 //! cors part
 app.use(cors());
 app.use(express.json());
+app.set("view engine", "ejs")
 
 // ! static file for checking is server working properly or what
 const staticFilePath = path.join(__dirname, "public");
 app.use(express.static(staticFilePath));
 
-app.get("/", (req, res) => {
-  const homePath = path.join(__dirname, "public", "index.html");
-  res.sendFile(homePath);
-});
+
+app.use("/report", (req, res)=>{
+  res.render("report")
+})
 
 // ! routes
 app.use("/api/auth", authRoute);
 app.use("/api/form", contactRoute);
 app.use("/api/data", serviceRoute);
+
 // // ? adming route
 app.use("/api/admin", adminRoute);
 

@@ -27,36 +27,33 @@ const home = (req, res, next) => {
   }
 };
 
-const register = async (req, res) => {
-  // console.log(req.body);
-  // ! process.exit(0);
-
-  const { username, email, phone, password } = req.body;
-
-  const isUserExit = await User_Database.findOne({ email });
-
-  if (isUserExit) {
-    return res.status(400).json({ msg: "Email is already registered.. ." });
-  }
-
-  const newUser = await User_Database.create({
-    username,
-    password,
-    email,
-    phone,
-  });
-
-  const newUserDetails = {
-    token: await newUser.generateToken(),
-    userId: newUser._id.toString(),
-  };
-  res
-    .status(201)
-    .send(
-      new ApiResponse(201, { newUserDetails, newUser }, "Successfully Created")
-    );
-
+const register = async (req, res, next) => {
   try {
+    const { username, email, phone, password } = req.body;
+
+    const isUserExit = await User_Database.findOne({ email });
+
+    if (isUserExit) {
+      return res.status(400).json({ msg: "Email is already registered." });
+    }
+
+    const newUser = await User_Database.create({
+      username,
+      password,
+      email,
+      phone,
+    });
+
+    const newUserDetails = {
+      token: await newUser.generateToken(),
+      userId: newUser._id.toString(),
+    };
+
+    return res.status(201).json({
+      success: true,
+      msg: "Successfully Created",
+      newUserDetails, // ✅ Ensure this is present
+    });
   } catch (error) {
     next(error);
   }
@@ -67,42 +64,46 @@ const login = async (req, res, next) => {
 
   try {
     const { email, password } = req.body;
-    const isUserExit = await User_Database.findOne({ email });
-    console.log(isUserExit);
+    const isUserExist = await User_Database.findOne({ email });
 
-    if (!isUserExit) {
-      return res.status(400).json({ message: "Invalid Credentials " });
+    if (!isUserExist) {
+      return res.status(400).json({ success: false, message: "Invalid Credentials" });
     }
 
-    const user = await isUserExit.comparePassword(password);
+    const isPasswordValid = await isUserExist.comparePassword(password);
 
-    if (user) {
-      const userDetails = {
-        token: await isUserExit.generateToken(),
-        userId: isUserExit._id.toString(),
-      };
-      res
-        .status(200)
-        .send(new ApiResponse(200, { userDetails }, "Login Successfull. .."));
-    } else {
-      res.status(401).json({ message: "Invalid email or password" });
+    if (!isPasswordValid) {
+      return res.status(401).json({ success: false, message: "Invalid email or password" });
     }
+
+    const userDetails = {
+      token: await isUserExist.generateToken(),
+      userId: isUserExist._id.toString(),
+    };
+
+    return res.status(200).json({
+      success: true,
+      message: "Login Successful",
+      data: userDetails, // ✅ Ensure 'data' contains token
+    });
   } catch (error) {
     next(error);
   }
 };
 
-// const user = async (req, res, next) => {
-//   console.log(req.user);
-  
-//   try {
-//     const userData = req.user;
-//     console.log(userData);
-//     return res.status(200).json({ userData });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
+
+const user = async (req, res, next) => {
+  try {
+    const userData = req.user;
+    return res.status(200).json({
+      success: true,
+      message: "User details fetched successfully.",
+      data: userData,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 // ! exporting
-module.exports = { home, register, login, };
+module.exports = { home, register, login, user };

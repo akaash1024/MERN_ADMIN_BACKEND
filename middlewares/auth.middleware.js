@@ -1,37 +1,39 @@
-require("dotenv").config()
+require("dotenv").config();
 const jwt = require("jsonwebtoken");
-
 const User_Database = require("../models/user.model");
 
-const authMiddleware = async (req, res, next) => {
-  const token = req.header("Authorization");
-
+const authMiddleware = async (req, res, next) => {  
+  const token = req.headers["authorization"];
+  
+  
   if (!token) {
-    // If you attempt to use an expired token, you'll receive a "401 Unauthorized HTTP" response.
-    return res
-      .status(401)
-      .json({ message: "Unauthorized HTTP, Token not provided" });
+    return res.status(401).json({ message: "Unauthorized. Token not provided" });
   }
 
-  // Assuming token is in the format "Bearer <jwtToken>, Removing the "Bearer" prefix"
-  const jwtToken = token.replace("Bearer", "").trim();
-  console.log("token form auth middleware", jwtToken);
+  const jwtToken = token.split(" ")[1]; // Extract token properly
+  if (!jwtToken) {
+    return res.status(401).json({ message: "Unauthorized. Token format is incorrect." });
+  }
 
   try {
     const isVerified = jwt.verify(jwtToken, process.env.JWT_SECRET_KEY);
 
-    const userData = await User_Database.findOne({ email: isVerified.email }).select({
-      password: 0,
-    });
-    console.log(userData);
+    const userData = await User_Database.findOne({ email: isVerified.email }).select("-password");
+
+    if (!userData) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
     req.user = userData;
     req.token = token;
     req.userID = userData._id;
 
+    console.log(req.user,req.token,req.userID, );
+    
+
     next();
   } catch (error) {
-    return res.status(401).json({ message: "Unauthorized. Invalid token." });
+    return next(error);
   }
 };
 
